@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.sist.study.dao.StManagerDao">
+
+	<resultMap type="com.sist.study.model.StManager" id="StManagerResultMap">
+		<id column="MANAGER_ID" property="managerId" />
+		<result column="MANAGER_PWD" property="managerPwd" />
+		<result column="MANAGER_NAME" property="managerName" />
+		<result column="MANAGER_NICKNAME" property="managerNickname" />
+		<result column="STATUS" property="status" />
+		<result column="MANAGER_DATE" property="managerDate" />	
+	</resultMap>
+
+	<resultMap type="com.sist.study.model.StUser" id="StUserResultMap">
+		<id column="USER_ID" property="userId"/>
+		<result column="USER_PWD" property="userPwd"/>
+		<result column="USER_NAME" property="userName"/>
+		<result column="USER_EMAIL" property="userEmail"/>
+		<result column="USER_TEL" property="userTel"/>
+		<result column="USER_POINT" property="userPoint"/>
+		<result column="USER_ADDRESS" property="userAddress"/>
+		<result column="USER_BIRTH" property="userBirth"/>
+		<result column ="STATUS" property="status" /> 
+		<result column ="REG_DATE" property="regDate" /> 
+	</resultMap>
+	
+	
+	<resultMap type="com.sist.study.model.ItemData" id="ItemDataResultMap">
+		<id column="ITEM_SEQ" property="itemSeq"/>
+		<result column="ITEM_CODE" property="itemCode"/>
+		<result column="ITEM_NAME" property="itemName"/>
+		<result column="ITEM_CATE" property="itemCate"/>
+		<result column="ITEM_PRICE" property="itemPrice"/>
+		<result column="ITEM_INTRO" property="itemIntro"/>
+		<result column="READ_CNT" property="readCnt"/>
+		<result column="STOCK" property="stock"/>
+		<result column="REG_DATE" property="regDate"/>
+	</resultMap>
+	
+	
+	<resultMap type="com.sist.study.model.ItemFile" id="ItemFileResultMap">
+		<id column="ITEM_SEQ" property="itemSeq"/>
+      	<result column ="FILE_NUM" property="fileNum" />
+		<result column="FILE_ORG_NAME" property="fileOrgName"/>
+		<result column="FILE_NAME" property="fileName"/>
+		<result column="FILE_EXT" property="fileExt"/>
+		<result column="FILE_SIZE" property="fileSize"/>
+		<result column="REG_DATE" property="regDate"/>
+	</resultMap>
+	
+	
+	<resultMap type="com.sist.study.model.ReBoard" id="ReBoardResultMap">
+		<id column="REBOARD_SEQ" property="reBoardSeq"/>
+		<result column="USER_ID" property="userId"/>
+		<result column="REBOARD_TITLE" property="reBoardTitle"/>
+		<result column="REBOARD_CONTENT" property="reBoardContent"/>
+		<result column="REBOARD_READ_CNT" property="reBoardReadCnt"/>
+		<result column="REG_DATE" property="regDate"/>
+		<result column="REBOARD_DEL_FLAG" property="reBoardDelFlag"/>
+	</resultMap>
+	
+	<resultMap type="com.sist.study.model.ReBoardFile" id="ReBoardFileResultMap">
+		<id column="REBOARD_SEQ" property="reBoardSeq"/>
+		<result column="FILE_SEQ" property="fileSeq"/>
+		<result column="FILE_ORG_NAME" property="fileOrgName"/>
+		<result column="FILE_NAME" property="fileName"/>
+		<result column="FILE_EXT" property="fileExt"/>
+		<result column="FILE_SIZE" property="fileSize"/>
+		<result column="REG_DATE" property="regDate"/>
+
+	</resultMap>
+	
+	<resultMap type="com.sist.study.model.ReBoardReply" id="ReBoardReplyResultMap">
+		<id column="REBOARD_SEQ" property="reBoardSeq"/>
+		<result column="REPLY_SEQ" property="replySeq"/>
+		<result column="REBOARD_GROUP" property="reBoardGroup"/>
+		<result column="REBOARD_ORDER" property="reBoardOrder"/>
+		<result column="REBOARD_INDENT" property="reBoardIndent"/>
+		<result column="REBOARD_PARENT" property="reBoardParent"/>
+	</resultMap>
+	
+	<resultMap type="com.sist.study.model.QnaBoard" id="QnABoardResultMap">
+		<id column="QNABOARD_SEQ" property="qnaBoardSeq"/>
+		<result column="USER_ID" property="userId"/>
+		<result column="QNABOARD_TITLE" property="qnaBoardTitle"/>
+		<result column="QNABOARD_CONTENT" property="qnaBoardContent"/>
+		<result column="STATUS" property="status"/>
+		<result column="REG_DATE" property="regDate"/>
+		<result column="SECRET_FLAG" property="secretFlag"/>
+		<result column="REPLY_FLAG" property="replyFlag"/>		
+	</resultMap>
+	
+	<resultMap type="com.sist.study.model.QnaFile" id="QnAFileResultMap">
+		<id column="QNABOARD_SEQ" property="qnaBoardSeq"/>
+		<id column="QNABOARD_FILE_SEQ" property="qnaBoardFileSeq"/>
+		<result column="FILE_ORG_NAME" property="fileOrgName"/>
+		<result column="FILE_NAME" property="fileName"/>
+		<result column="FILE_EXT" property="fileExt"/>
+		<result column="FILE_SIZE" property="fileSize"/>
+		<result column="REG_DATE" property="regDate"/>
+	</resultMap>
+	
+	<resultMap type="com.sist.study.model.QnaReply" id="QnAReplyResultMap">
+		<id column="QNAREPLY_SEQ" property="qnareplySeq"/>
+		<id column="QNABOARD_SEQ" property="qnaboardSeq"/>
+		<result column="MANAGER_ID" property="managerId"/>
+		<result column="REPLY_CONTENT" property="replyContent"/>
+		<result column="REG_DATE" property="regDate"/>
+	</resultMap>
+	
+	<select id="stManagerSelect" parameterType="String" resultMap="StManagerResultMap">
+		SELECT MANAGER_ID, 
+		       NVL(MANAGER_PWD, '') MANAGER_PWD, 
+		       NVL(MANAGER_NAME, '') MANAGER_NAME, 
+		       NVL(MANAGER_NICKNAME, '') MANAGER_NICKNAME,
+			   NVL(STATUS, 'N') STATUS, 
+			   NVL(TO_CHAR(MANAGER_DATE, 'YYYY-MM-DD HH24:MI:SS'), '') MANAGER_DATE
+		  FROM ST_MANAGER 
+		 WHERE MANAGER_ID = #{value}
+	</select>
+	
+	
+	
+	<!-- ============================================================================ -->
+	
+	
+	
+	<select id="stUserListCount" parameterType="com.sist.study.model.StUser" resultType="long">
+		SELECT COUNT(USER_ID)
+		  FROM ST_USER
+		<if test='searchValue != null and searchValue != ""'>
+		 WHERE USER_ID LIKE '%' || #{searchValue} || '%'
+ 		</if>
+	</select>
+	
+	<select id="stUserList" parameterType="com.sist.study.model.StUser" resultMap="StUserResultMap">
+		SELECT USER_ID,
+		       USER_PWD,
+		       USER_EMAIL,
+		       USER_TEL,
+		       USER_POINT,
+		       USER_ADDRESS,
+		       USER_BIRTH,
+		       STATUS,
+		       REG_DATE
+		  FROM (SELECT ROWNUM RNUM,
+		               USER_ID,
+		               USER_PWD,
+		               USER_EMAIL,
+		               USER_TEL,
+		               USER_POINT,
+		               USER_ADDRESS,
+		               USER_BIRTH,
+		               STATUS,
+		               REG_DATE
+		          FROM (SELECT USER_ID, 
+		                       NVL(USER_PWD, '') USER_PWD, 
+		                       NVL(USER_NAME, '') USER_NAME, 
+		                       NVL(USER_EMAIL, '') USER_EMAIL,
+		                       NVL(USER_TEL, '') USER_TEL,
+		                       NVL(USER_POINT, 0) USER_POINT,
+		                       NVL(USER_ADDRESS, '') USER_ADDRESS,
+		                       NVL(USER_BIRTH, '') USER_BIRTH,
+		                       NVL(STATUS, 'N') STATUS, 
+		                       NVL(TO_CHAR(REG_DATE, 'YYYY-MM-DD HH24:MI:SS'), '') REG_DATE
+		                  FROM ST_USER 
+		<if test='searchValue != null and searchValue != ""'>	                  
+		                 WHERE USER_ID LIKE '%' || #{searchValue} || '%'
+		</if>
+		              ORDER BY USER_ID DESC))
+		 WHERE RNUM <![CDATA[>=]]> #{startRow}
+		   AND RNUM <![CDATA[<=]]> #{endRow}
+	</select>
+	
+	<update id="stUserListUpdate" parameterType="com.sist.study.model.StUser">
+		UPDATE ST_USER		
+		   SET USER_PWD = #{userPwd},
+		   	   USER_EMAIL = #{userEmail},
+		   	   USER_TEL = #{userTel},
+		   	   USER_POINT = #{userPoint},
+		       STATUS = #{status}
+		 WHERE USER_ID = #{userId}
+	</update>
+	
+	
+	
+	<!-- ============================================================================ -->
+	
+	
+	
+	<select id="itemDataListCount" parameterType="com.sist.study.model.StUser" resultType="long">
+		SELECT COUNT(ITEM_SEQ)
+		  FROM ITEM_DATA
+		 WHERE 1 = 1
+       	<if test='searchType != null and searchType != "" and searchValue != null and searchValue != ""'>
+			<choose>
+				<when test='searchType == "1"'>
+	       AND ITEM_NAME LIKE '%' || #{searchValue} || '%'
+	        	</when>
+	        	<when test='searchType == "2"'>    
+	       AND ITEM_CATE LIKE '%' || #{searchValue} || '%'
+	        	</when>
+	        	<when test='searchType == "3"'>    
+	       AND ITEM_CODE LIKE '%' || #{searchValue} || '%'
+	        	</when> 
+			</choose>
+		</if>
+	</select>
+	
+	<select id="itemDataList" parameterType="com.sist.study.model.ItemData" resultMap="ItemDataResultMap">
+		SELECT ITEM_SEQ,
+		       ITEM_CODE,
+		       ITEM_NAME,
+		       ITEM_CATE,
+		       ITEM_PRICE,
+		       READ_CNT,
+		       STOCK,
+		       REG_DATE
+		  FROM (SELECT ROWNUM RNUM,
+		               ITEM_SEQ,
+		               ITEM_CODE,
+		               ITEM_NAME,
+		               ITEM_CATE,
+		               ITEM_PRICE,
+		               READ_CNT,
+		               STOCK,
+		               REG_DATE
+		          FROM (SELECT ITEM_SEQ,
+		                       NVL(ITEM_CODE, '') ITEM_CODE,
+		                       NVL(ITEM_NAME, '') ITEM_NAME,
+		                       NVL(ITEM_CATE, '') ITEM_CATE,
+		                       NVL(ITEM_PRICE, 0) ITEM_PRICE,
+		                       NVL(READ_CNT, 0) READ_CNT,
+		                       NVL(STOCK, 0) STOCK,
+		                       NVL(TO_CHAR(REG_DATE, 'YYYY-MM-DD HH24:MI:SS'), '') REG_DATE
+		                  FROM ITEM_DATA
+		                 WHERE 1 = 1
+		                 
+					<if test='searchType != null and searchType != "" and searchValue != null and searchValue != ""'>
+						<choose>
+							<when test='searchType == "1"'>
+					       AND ITEM_NAME LIKE '%' || #{searchValue} || '%'
+					        </when>
+					        <when test='searchType == "2"'>    
+					       AND ITEM_CATE LIKE '%' || #{searchValue} || '%'
+					        </when>
+					        <when test='searchType == "3"'>    
+					       AND ITEM_CODE LIKE '%' || #{searchValue} || '%'
+					        </when> 
+					        <when test='searchType == "4"'>
+					       AND DBMS_LOB.INSTR(ITEM_INTRO LIKE, #{searchValue}) > 0
+					    	</when> 
+						</choose>
+					</if>
+		              ORDER BY ITEM_SEQ DESC))
+		 WHERE RNUM <![CDATA[>=]]> #{startRow}
+		   AND RNUM <![CDATA[<=]]> #{endRow}
+	</select>
+	
+	<select id="itemDataSelect" parameterType="long" resultMap="ItemDataResultMap">
+		SELECT ITEM_SEQ,
+		       NVL(ITEM_CODE, '') ITEM_CODE,
+		       NVL(ITEM_NAME, '') ITEM_NAME,
+		       NVL(ITEM_CATE, '') ITEM_CATE,
+		       NVL(ITEM_PRICE, 0) ITEM_PRICE,
+		       NVL(ITEM_INTRO, '') ITEM_INTRO,
+		       NVL(READ_CNT, 0) READ_CNT,
+		       NVL(STOCK, 0) STOCK,
+		       NVL(TO_CHAR(REG_DATE, 'YYYY-MM-DD HH24:MI:SS'), '') REG_DATE
+		  FROM ITEM_DATA
+		 WHERE ITEM_SEQ = #{itemSeq}
+	</select>
+	
+	<insert id="itemDataInsert" parameterType="com.sist.study.model.ItemData">
+		<selectKey resultType="long" keyProperty="itemSeq" order="BEFORE">
+			SELECT SEQ_ITEM_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO ITEM_DATA (ITEM_SEQ, ITEM_CODE, ITEM_NAME, ITEM_CATE, ITEM_PRICE, ITEM_INTRO, READ_CNT, STOCK, REG_DATE) 
+		VALUES (#{itemSeq}, #{itemCode}, #{itemName}, #{itemCate}, #{itemPrice}, #{itemIntro}, 0, #{stock}, SYSDATE)
+	</insert>
+	
+	<update id="itemDataUpdate" parameterType="com.sist.study.model.ItemData">
+		UPDATE ITEM_DATA
+		   SET ITEM_NAME = #{itemName},
+		       ITEM_CATE = #{itemCate},
+		       ITEM_PRICE = #{itemPrice},
+		       ITEM_INTRO = #{itemIntro},
+		       STOCK = #{stock}
+		 WHERE ITEM_SEQ = #{itemSeq}
+	</update>
+	
+	
+	
+	<!-- ============================================================================ -->
+		
+		
+	
+	<select id="reBoardListCount" parameterType="com.sist.study.model.ReBoard" resultType="long">
+		SELECT COUNT(REBOARD_SEQ)
+		  FROM REBOARD
+		 WHERE 1 = 1
+       	<if test='searchType != null and searchType != "" and searchValue != null and searchValue != ""'>
+			<choose>
+				<when test='searchType == "1"'>
+	       AND USER_ID LIKE '%' || #{searchValue} || '%'
+	        	</when>
+	        	<when test='searchType == "2"'>    
+	       AND REBOARD_TITLE LIKE '%' || #{searchValue} || '%'
+	        	</when>
+	        	<when test='searchType == "3"'>    
+	       AND REBOARD_CONTENT LIKE '%' || #{searchValue} || '%'
+	        	</when> 
+			</choose>
+		</if>
+	</select>
+	
+	<select id="reBoardList" parameterType="com.sist.study.model.ReBoard" resultMap="ReBoardResultMap">
+		SELECT REBOARD_SEQ,
+		       USER_ID,
+		       REBOARD_TITLE,
+		       REBOARD_CONTENT,
+		       REBOARD_READ_CNT,
+		       REBOARD_DEL_FLAG,
+		       REG_DATE
+		  FROM (SELECT ROWNUM RNUM,
+		               REBOARD_SEQ,
+		               USER_ID,
+		               REBOARD_TITLE,
+		               REBOARD_CONTENT,
+		               REBOARD_READ_CNT,
+		               REBOARD_DEL_FLAG,
+		               REG_DATE
+		          FROM (SELECT REBOARD_SEQ, 
+		                       NVL(USER_ID, 0) USER_ID,
+		                       NVL(REBOARD_TITLE, '') REBOARD_TITLE,
+		                       NVL(REBOARD_CONTENT, '') REBOARD_CONTENT,
+		                       NVL(REBOARD_READ_CNT, 0) REBOARD_READ_CNT,
+		                       NVL(REBOARD_DEL_FLAG, '') REBOARD_DEL_FLAG,
+		                       NVL(TO_CHAR(REG_DATE, 'YYYY-MM-DD HH24:MI:SS'), '') REG_DATE
+		                  FROM REBOARD
+		                 WHERE 1 = 1
+					<if test='searchType != null and searchType != "" and searchValue != null and searchValue != ""'>
+						<choose>
+							<when test='searchType == "1"'>
+					       AND USER_ID LIKE '%' || #{searchValue} || '%'
+					        </when>
+					        <when test='searchType == "2"'>    
+					       AND REBOARD_TITLE LIKE '%' || #{searchValue} || '%'
+					        </when>
+					        <when test='searchType == "3"'>    
+					       AND REBOARD_CONTENT LIKE '%' || #{searchValue} || '%'
+					        </when> 
+						</choose>
+					</if>
+		              ORDER BY REBOARD_SEQ DESC))
+		 WHERE RNUM <![CDATA[>=]]> #{startRow}
+		   AND RNUM <![CDATA[<=]]> #{endRow}
+	</select>	
+	
+	<select id="reBoardSelect" parameterType="long" resultMap="ReBoardResultMap" >
+		SELECT REBOARD_SEQ, 
+		       NVL(USER_ID, 0) USER_ID,
+		       NVL(REBOARD_TITLE, '') REBOARD_TITLE,
+		       NVL(REBOARD_CONTENT, '') REBOARD_CONTENT,
+		       NVL(REBOARD_READ_CNT, 0) REBOARD_READ_CNT,
+		       NVL(REBOARD_DEL_FLAG, '') REBOARD_DEL_FLAG,
+		       NVL(TO_CHAR(REG_DATE, 'YYYY-MM-DD HH24:MI:SS'), '') REG_DATE
+		  FROM REBOARD
+		 WHERE REBOARD_SEQ = #{value}
+	</select>
+	
+	<!-- ============================================================================ -->
+		
+		
+	
+	<select id="qnaBoardListCount" parameterType="com.sist.study.model.QnaBoard" resultType="long">
+		SELECT COUNT(QNABOARD_SEQ)
+	  	  FROM QNABOARD
+	  	 WHERE 1 = 1 
+       	<if test='searchType != null and searchType != "" and searchValue != null and searchValue != ""'>
+			<choose>
+				<when test='searchType == "1"'>
+	       AND USER_ID LIKE '%' || #{searchValue} || '%'
+	        	</when>
+	        	<when test='searchType == "2"'>    
+	       AND QNABOARD_TITLE LIKE '%' || #{searchValue} || '%'
+	        	</when>
+	        	<when test='searchType == "3"'>    
+	       AND QNABOARD_CONTENT LIKE '%' || #{searchValue} || '%'
+	        	</when> 
+			</choose>
+		</if>
+	</select>
+	
+	<select id="qnaBoardList" parameterType="com.sist.study.model.QnaBoard" resultMap="QnABoardResultMap">
+		SELECT QNABOARD_SEQ,
+		       USER_ID,
+		       QNABOARD_TITLE,
+		       QNABOARD_CONTENT,
+		       STATUS,
+		       SECRET_FLAG,
+		       REPLY_FLAG,
+		       REG_DATE
+		  FROM (SELECT ROWNUM RNUM,
+		               QNABOARD_SEQ,
+		               USER_ID,
+		               QNABOARD_TITLE,
+		               QNABOARD_CONTENT,
+		               STATUS,
+		               SECRET_FLAG,
+		               REPLY_FLAG,
+		               REG_DATE
+		          FROM (SELECT QNABOARD_SEQ, 
+		                       NVL(USER_ID, 0) USER_ID,
+		                       NVL(QNABOARD_TITLE, '') QNABOARD_TITLE,
+		                       NVL(QNABOARD_CONTENT, '') QNABOARD_CONTENT,
+		                       NVL(STATUS, 'N') STATUS,
+		                       NVL(SECRET_FLAG, 'N') SECRET_FLAG,
+		                       NVL(REPLY_FLAG, 'N') REPLY_FLAG,
+		                       NVL(TO_CHAR(REG_DATE, 'YYYY-MM-DD HH24:MI:SS'), '') REG_DATE
+		                  FROM QNABOARD
+		                 WHERE 1 = 1
+					<if test='searchType != null and searchType != "" and searchValue != null and searchValue != ""'>
+						<choose>
+							<when test='searchType == "1"'>
+					       AND USER_ID LIKE '%' || #{searchValue} || '%'
+					        </when>
+					        <when test='searchType == "2"'>    
+					       AND QNABOARD_TITLE LIKE '%' || #{searchValue} || '%'
+					        </when>
+					        <when test='searchType == "3"'>    
+					       AND QNABOARD_CONTENT LIKE '%' || #{searchValue} || '%'
+					        </when> 
+						</choose>
+					</if> 
+		              ORDER BY QNABOARD_SEQ DESC))
+		 WHERE RNUM <![CDATA[>=]]> #{startRow}
+		   AND RNUM <![CDATA[<=]]> #{endRow}
+	</select>
+	
+	<select id="qnaBoardSelect" parameterType="long" resultMap="QnABoardResultMap">
+		SELECT QNABOARD_SEQ, 
+		       NVL(USER_ID, 0) USER_ID,
+		       NVL(QNABOARD_TITLE, '') QNABOARD_TITLE,
+		       NVL(QNABOARD_CONTENT, '') QNABOARD_CONTENT,
+		       NVL(STATUS, 'N') STATUS,
+		       NVL(SECRET_FLAG, 'N') SECRET_FLAG,
+		       NVL(REPLY_FLAG, 'N') REPLY_FLAG,
+		       NVL(TO_CHAR(REG_DATE, 'YYYY-MM-DD HH24:MI:SS'), '') REG_DATE
+		  FROM QNABOARD
+		 WHERE QNABOARD_SEQ = #{value}
+	</select>
+	
+	<select id="qnaReplySelectList" parameterType="long" resultMap="QnAReplyResultMap">
+		SELECT QNAREPLY_SEQ,
+		       QNABOARD_SEQ,
+		       MANAGER_ID,
+		       REPLY_CONTENT,
+		       REG_DATE
+		  FROM (SELECT ROWNUM RNUM,
+		               QNAREPLY_SEQ,
+		               QNABOARD_SEQ,
+		               MANAGER_ID,
+		               REPLY_CONTENT,
+		               REG_DATE
+		          FROM (SELECT QNAREPLY_SEQ,
+		                       QNABOARD_SEQ,
+		                       NVL(MANAGER_ID, '') MANAGER_ID,
+		                       NVL(REPLY_CONTENT, '')REPLY_CONTENT,
+		                       NVL(TO_CHAR(REG_DATE, 'YYYY-MM-DD HH24:MI:SS'), '') REG_DATE
+		                  FROM QNA_REPLY
+		                 WHERE QNABOARD_SEQ = #{value}
+		                 ORDER BY QNAREPLY_SEQ DESC))
+	</select>
+	
+	<insert id="qnaReplyInsert" parameterType="com.sist.study.model.QnaReply">
+		<selectKey resultType="long" keyProperty="qnareplySeq" order="BEFORE">
+			SELECT SEQ_QNAREPLY_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO QNA_REPLY (MANAGER_ID, QNAREPLY_SEQ, QNABOARD_SEQ, REPLY_CONTENT, REG_DATE) 
+		VALUES (#{managerId}, #{qnareplySeq}, #{qnaboardSeq}, #{replyContent}, SYSDATE)
+	</insert>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<!-- ============================================================================ -->
+	
+	
+	
+	<select id="itemDataFileSelect" parameterType="long" resultMap="ItemFileResultMap">
+		SELECT ITEM_SEQ,
+		       NVL(FILE_NUM, 0) FILE_NUM,
+		       NVL(FILE_ORG_NAME, '') FILE_ORG_NAME,
+		       NVL(FILE_NAME, '') FILE_NAME,
+		       NVL(FILE_EXT, '') FILE_EXT,
+		       NVL(FILE_SIZE, 0) FILE_SIZE,
+		       NVL(TO_CHAR(REG_DATE, 'YYYY-MM-DD HH24:MI:SS'), '') REG_DATE
+		  FROM ITEM_FILE
+		 WHERE ITEM_SEQ = #{value} 
+		   AND FILE_NUM = 1
+	</select>
+	
+	<insert id="itemDataFileInsert" parameterType="com.sist.study.model.ItemFile">
+		INSERT INTO ITEM_FILE (ITEM_SEQ, FILE_NUM, FILE_ORG_NAME, FILE_NAME, FILE_EXT, FILE_SIZE, REG_DATE) VALUES 
+		VALUES (#{itemSeq}, #{fileNum}, #{fileOrgName}, #{fileName}, #{fileExt}, #{fileSize}, SYSDATE)
+	</insert>
+	
+	<delete id="itemDataFileDelete" parameterType="long">
+		DELETE 
+		  FROM ITEM_FILE
+		 WHERE ITEM_SEQ = #{value}
+	</delete>
+	
+	<select id="reBoardFileSelect" parameterType="long" resultMap="ReBoardFileResultMap">
+		SELECT REBOARD_SEQ,
+		       NVL(FILE_SEQ, 0) FILE_SEQ,
+		       NVL(FILE_ORG_NAME, '') FILE_ORG_NAME,
+		       NVL(FILE_NAME, '') FILE_NAME,
+		       NVL(FILE_EXT, '') FILE_EXT,
+		       NVL(FILE_SIZE, 0) FILE_SIZE,
+		       NVL(TO_CHAR(REG_DATE, 'YYYY-MM-DD HH24:MI:SS'), '') REG_DATE 
+		  FROM REBOARD_FILE
+		 WHERE REBOARD_SEQ = #{value} 
+		   AND FILE_SEQ = 1
+	</select>
+	
+	<select id="qnaFileSelect" parameterType="long" resultMap="QnAFileResultMap">
+		SELECT QNABOARD_SEQ,
+		       NVL(QNABOARD_FILE_SEQ, 0) QNABOARD_FILE_SEQ,
+		       NVL(FILE_ORG_NAME, '') FILE_ORG_NAME,
+		       NVL(FILE_NAME, '') FILE_NAME,
+		       NVL(FILE_EXT, '') FILE_EXT,
+		       NVL(FILE_SIZE, 0) FILE_SIZE,
+		       NVL(TO_CHAR(REG_DATE, 'YYYY-MM-DD HH24:MI:SS'), '') REG_DATE
+		  FROM QNA_FILE
+		 WHERE QNABOARD_SEQ = #{value} 
+		   AND QNABOARD_FILE_SEQ = 1
+	</select>
+	
+</mapper>

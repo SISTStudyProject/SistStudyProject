@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.sist.study.dao.PaymentDao">
+
+   <resultMap type="com.sist.study.model.ItemData" id="itemDataResultMap">
+      <id column ="CID" property="cid" />
+      <result column ="TID" property="tid" /> 
+      <result column ="PARTNER_ORDER_ID" property="partnerOrderId" /> 
+      <result column ="PARTNER_USER_ID" property="partnerUserId" /> 
+      <result column ="ITEM_CODE" property="itemCode" /> 
+      <result column ="ITEM_NAME" property="itemName" /> 
+      <result column ="TOTAL_AMOUNT" property="totalAmount" />
+      <result column ="TAX_FREE_AMOUNT" property="taxFreeAmount" /> 
+      <result column ="STATUS" property="status" />
+      <result column ="POINT" property="point" />
+      <result column ="APPROVED_AT" property="approvedAt" /> 
+   </resultMap>
+   
+   <insert id="paymentInsert" parameterType="com.sist.study.model.PaymentApprove">
+		INSERT INTO st_payment_approve (
+		    CID,
+		    TID,
+		    PARTNER_ORDER_ID,
+		    PARTNER_USER_ID,
+		    ITEM_CODE,
+		    ITEM_NAME,
+		    TOTAL_AMOUNT,
+		    TAX_FREE_AMOUNT,
+		    STATUS,
+		    POINT,
+		    APPROVED_AT
+		) VALUES (
+		    #{cid},
+		    #{tid},
+		    #{partnerOrderId},
+		    #{partnerUserId},
+		    #{itemCode},
+		    #{itemName},
+		    #{totalAmount},
+		    #{taxFreeAmount},
+		    #{status},
+		    #{point},
+		    sysdate
+		)    
+   </insert>
+   
+   
+   <update id="updatePayment" parameterType="String">
+    UPDATE ST_PAYMENT_APPROVE
+	    SET status = 'Y',    
+	        APPROVED_AT = sysdate
+	WHERE 1=1
+	  AND TID = #{value}
+   </update>
+   
+   
+   
+   
+
+
+
+
+
+
+</mapper>

@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.study.dao.ReBoardDao">
+
+	<resultMap id="reboardResultMap" type="com.sist.study.model.ReBoard" >
+		<id column="REBOARD_SEQ" property="reBoardSeq" />
+		<result column="ITEM_SEQ" property="itemSeq" />
+		<result column="USER_ID" property="userId" />
+		<result column="REBOARD_TITLE" property="reBoardTitle" />
+		<result column="REBOARD_CONTENT" property="reBoardContent" />
+		<result column="REBOARD_READ_CNT" property="reBoardReadCnt" />
+		<result column="REG_DATE" property="regDate" />
+		<result column="REBOARD_DEL_FLAG" property="reBoardDelFlag" />
+	</resultMap>
+
+	<resultMap id="reboardFileResultMap" type="com.sist.study.model.ReBoardFile" >
+		<id column="REBOARD_SEQ" property="reBoardSeq" />
+		<id column="FILE_SEQ" property="fileSeq" />
+		<result column="FILE_ORG_NAME" property="fileOrgName" />
+		<result column="FILE_NAME" property="fileName" />
+		<result column="FILE_EXT" property="fileExt" />
+		<result column="FILE_SIZE" property="fileSize" />
+		<result column="REG_DATE" property="regDate" />
+	</resultMap>
+	
+	<resultMap id="reboardReplyResultMap" type="com.sist.study.model.ReBoardReply" >
+		<id column="REPLY_SEQ" property="replySeq" />
+		<id column="REBOARD_SEQ" property="reBoardSeq" />
+		<result column="USER_ID" property="userId" />
+		<result column="REPLY_GROUP" property="replyGroup" />
+		<result column="REPLY_ORDER" property="replyOrder" />
+		<result column="REPLY_CONTENT" property="replyContent" />
+		<result column="REG_DATE" property="regDate" />
+		<result column="STATUS" property="status" />
+	</resultMap>
+	
+    <resultMap type="com.sist.study.model.ItemData" id="itemDataResultMap">
+      <id column ="ITEM_SEQ" property="itemSeq" />
+      <result column ="FILE_NAME" property="fileName" /> 
+      <result column ="ITEM_CODE" property="itemCode" /> 
+      <result column ="ITEM_NAME" property="itemName" /> 
+      <result column ="ITEM_CATE" property="itemCate" /> 
+      <result column ="ITEM_PRICE" property="itemPrice" /> 
+      <result column ="ITEM_INTRO" property="itemIntro" />
+      <result column ="READ_CNT" property="readCnt" /> 
+      <result column ="STOCK" property="stock" />
+      <result column ="REG_DATE" property="regDate" /> 
+   </resultMap>
+
+	<!-- 글 갯수 -->
+	<select id="reboardTotal" parameterType="long" resultType="long">
+		SELECT COUNT(B.REBOARD_SEQ) CNT
+	      FROM ST_ITEM_DATA A, ST_REBOARD B
+	     WHERE A.ITEM_SEQ = B.ITEM_SEQ
+	       AND B.REBOARD_DEL_FLAG = 'N'
+	</select>
+	
+	<!-- 후기 리스트 -->
+	<select id="reboardList" parameterType="com.sist.study.model.ReBoard" resultMap="reboardResultMap">
+		SELECT 
+		    B.ITEM_SEQ,  
+		    NVL(A.ITEM_CODE, '') ITEM_CODE,  
+		    NVL(A.ITEM_NAME, '') ITEM_NAME,  
+		    NVL(A.ITEM_CATE, '') ITEM_CATE,
+		    NVL(A.ITEM_PRICE, 0) ITEM_PRICE,  
+		    NVL(A.ITEM_INTRO, '') ITEM_INTRO,
+		    B.REBOARD_SEQ,  
+		    NVL(B.USER_ID, '') USER_ID,  
+		    NVL(B.REBOARD_TITLE, '') REBOARD_TITLE, 
+		    NVL(B.REBOARD_CONTENT, '') REBOARD_CONTENT,
+		    NVL(B.REBOARD_READ_CNT, 0) REBOARD_READ_CNT,  
+		    NVL(TO_CHAR(B.REG_DATE, 'YY.MM.DD'), '') REG_DATE,  
+		    NVL(B.REBOARD_DEL_FLAG, 'N') REBOARD_DEL_FLAG
+		  FROM ST_ITEM_DATA A, ST_REBOARD B
+		 WHERE A.ITEM_SEQ = B.ITEM_SEQ
+		   AND B.REBOARD_DEL_FLAG = 'N'
+		ORDER BY B.REBOARD_SEQ DESC
+	</select>
+	
+	<!-- 후기 상세 -->
+	<select id="reboardSelect" parameterType="long" resultMap="reboardResultMap">
+		SELECT 
+	   		B.ITEM_SEQ,  
+		    NVL(A.ITEM_CODE, '') ITEM_CODE,  
+		    NVL(A.ITEM_NAME, '') ITEM_NAME,  
+		    NVL(A.ITEM_CATE, '') ITEM_CATE,
+		    NVL(A.ITEM_PRICE, 0) ITEM_PRICE,  
+		    NVL(A.ITEM_INTRO, '') ITEM_INTRO,
+		    B.REBOARD_SEQ,  
+		    NVL(B.USER_ID, '') USER_ID,  
+		    NVL(B.REBOARD_TITLE, '') REBOARD_TITLE, 
+		    NVL(B.REBOARD_CONTENT, '') REBOARD_CONTENT,
+		    NVL(B.REBOARD_READ_CNT, 0) REBOARD_READ_CNT,  
+		    NVL(TO_CHAR(B.REG_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') REG_DATE,  
+		    NVL(B.REBOARD_DEL_FLAG, 'N') REBOARD_DEL_FLAG
+		  FROM ST_ITEM_DATA A, ST_REBOARD B
+		WHERE A.ITEM_SEQ = B.ITEM_SEQ
+		   AND B.REBOARD_SEQ = #{value}
+	</select>
+	
+	<!-- 후기 파일 상세 -->
+	<select id="reboardFileSelect" parameterType="long" resultMap="reboardFileResultMap" >
+		SELECT
+		    REBOARD_SEQ,
+		    FILE_SEQ,
+		    NVL(FILE_ORG_NAME,'') FILE_ORG_NAME,
+		    NVL(FILE_NAME,'') FILE_NAME,
+		    NVL(FILE_EXT,'') FILE_EXT,
+		    NVL(FILE_SIZE,'') FILE_SIZE,
+		    NVL(TO_CHAR(REG_DATE,'YYYY.MM.DD HH24:MI:SS'),'') REG_DATE
+		  FROM  ST_REBOARD_FILE
+		WHERE REBOARD_SEQ = #{value}
+	</select> 
+	
+	<!-- 조회수 증가 -->
+	<update id="readCntUpdate" parameterType="long" >
+		UPDATE ST_REBOARD
+		SET REBOARD_READ_CNT = REBOARD_READ_CNT + 1
+	    WHERE REBOARD_SEQ = #{reboardSeq}
+	</update>
+		
+	<!-- 후기 등록 -->
+	<insert id="reboardInsert" parameterType="com.sist.study.model.ReBoard" >
+	<selectKey resultType="long" keyProperty="reBoardSeq" order="BEFORE">
+		SELECT SEQ_REBOARD_SEQ.NEXTVAL FROM DUAL
+	</selectKey>
+		INSERT INTO ST_REBOARD 
+		(
+		    ITEM_SEQ,
+		    REBOARD_SEQ,
+		    USER_ID,
+		    REBOARD_TITLE,
+		    REBOARD_CONTENT,
+		    REBOARD_READ_CNT,
+		    REG_DATE,
+		    REBOARD_DEL_FLAG
+		) VALUES (#{itemSeq},#{reBoardSeq}, #{userId},#{reBoardTitle},#{reBoardContent},0,SYSDATE, 'N')
+	</insert>
+	
+	<!-- 후기 파일 등록 -->
+	<insert id="reboardFileInsert" parameterType="com.sist.study.model.ReBoardFile" >
+	<selectKey resultType="long" keyProperty="fileSeq" order="BEFORE" >
+			SELECT NVL(MAX(FILE_SEQ), 0) + 1 
+			  FROM ST_REBOARD_FILE WHERE REBOARD_SEQ = #{reBoardSeq}
+	</selectKey>
+		INSERT INTO ST_REBOARD_FILE 
+		(
+		    REBOARD_SEQ,
+		    FILE_SEQ,
+		    FILE_ORG_NAME,
+		    FILE_NAME,
+		    FILE_EXT,
+		    FILE_SIZE,
+		    REG_DATE
+		) VALUES (#{reBoardSeq}, #{fileSeq}, #{fileOrgName}, #{fileName}, #{fileExt}, #{fileSize}, SYSDATE)
+	</insert>
+	
+	<!-- 글 삭제 -->
+	<update id="reboardStatusUpdate" parameterType="long" >
+		UPDATE ST_REBOARD SET REBOARD_DEL_FLAG = 'Y' WHERE REBOARD_SEQ = #{value}
+	</update>
+	
+	<delete id="reboardFileDelete" parameterType="long" >
+		DELETE FROM ST_REBOARD_FILE WHERE REBOARD_SEQ = #{value}
+	</delete>
+	
+	<delete id="replyDelete" parameterType="long" >
+		DELETE FROM ST_REBOARD_REPLY WHERE REBOARD_SEQ = #{value}
+	</delete>
+	
+	<!-- 댓글 등록 -->
+	<insert id="replyInsert" parameterType="com.sist.study.model.ReBoardReply" >
+			INSERT INTO ST_REBOARD_REPLY (USER_ID, REBOARD_SEQ, REPLY_SEQ, REPLY_GROUP, REPLY_ORDER, REPLY_CONTENT, REG_DATE, STATUS)
+			VALUES 
+			(
+				#{userId}, #{reBoardSeq}, SEQ_REBOARD_REPLY_SEQ.NEXTVAL, 
+				(SELECT NVL(MAX(REPLY_GROUP), 0) + 1 FROM ST_REBOARD_REPLY WHERE REBOARD_SEQ = #{reBoardSeq}), 
+				(SELECT NVL(MAX(REPLY_ORDER),0) + 1 FROM ST_REBOARD_REPLY WHERE REPLY_SEQ = #{replySeq}), 
+				#{replyContent}, SYSDATE, 'N'
+			)
+	</insert>
+	
+	<!-- 대댓글 등록 -->
+	<insert id="replyReInsert" parameterType="com.sist.study.model.ReBoardReply" >
+		INSERT INTO ST_REBOARD_REPLY (USER_ID, REBOARD_SEQ, REPLY_SEQ, REPLY_GROUP, REPLY_ORDER, REPLY_CONTENT, REG_DATE, STATUS)
+		VALUES
+		(
+			#{userId}, #{reBoardSeq}, SEQ_REBOARD_REPLY_SEQ.NEXTVAL,
+			#{replyGroup}, (SELECT NVL(MAX(REPLY_ORDER),0) + 1 FROM ST_REBOARD_REPLY WHERE REPLY_GROUP = #{replyGroup})
+			,#{replyContent}, SYSDATE, 'N'
+		)
+	</insert>
+		
+	<!-- 댓글 조회 -->
+	<select id="replySelect" parameterType="long" resultMap="reboardReplyResultMap" >
+		SELECT
+		    NVL(USER_ID, '') USER_ID,
+		    REBOARD_SEQ,
+		    REPLY_SEQ,
+		    NVL(REPLY_GROUP, 0) REPLY_GROUP,
+		    NVL(REPLY_ORDER, 0) REPLY_ORDER,
+		    NVL(REPLY_CONTENT, '') REPLY_CONTENT,
+		    NVL(TO_CHAR(REG_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') REG_DATE,
+		    NVL(STATUS, 'N') STATUS
+		FROM ST_REBOARD_REPLY
+		WHERE REBOARD_SEQ = #{value}
+		ORDER BY REPLY_GROUP DESC, REPLY_ORDER ASC
+	</select>
+	
+	<!-- 댓글 상태 수정 -->
+	<update id="replyStatusUpdate" parameterType="long" >
+		UPDATE ST_REBOARD_REPLY SET STATUS = 'Y' WHERE REPLY_SEQ = #{value}
+	</update>
+	
+	<!-- 후기 수정 -->
+	<update id="reboardUpdate" parameterType="com.sist.study.model.ReBoard" >
+		UPDATE ST_REBOARD 
+		SET REBOARD_TITLE = #{reBoardTitle}
+		    , REBOARD_CONTENT = #{reBoardContent}
+		WHERE REBOARD_SEQ = #{reBoardSeq}
+	</update>
+	
+	<!-- 상품 코드로 상품 조회 -->
+	<select id="itemCodeSelect" parameterType="String" resultMap="itemDataResultMap" >
+		SELECT
+		    ITEM_SEQ,
+		    NVL(ITEM_CODE,'') ITEM_CODE, 
+		    NVL(ITEM_NAME,'') ITEM_NAME,
+		    NVL(ITEM_CATE,'') ITEM_CATE,
+		    NVL(ITEM_PRICE,0) ITEM_PRICE, 
+		    NVL(ITEM_INTRO,'') ITEM_INTRO,
+		    NVL(READ_CNT,0) READ_CNT, 
+		    NVL(STOCK,0) STOCK, 
+		    NVL(TO_CHAR(REG_DATE, 'YY.MM.DD'), '') REG_DATE
+		FROM ST_ITEM_DATA
+		WHERE ITEM_CODE = #{value}
+	</select>
+
+</mapper>

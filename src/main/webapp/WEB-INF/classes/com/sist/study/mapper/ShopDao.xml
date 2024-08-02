@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.sist.study.dao.ShopDao">
+
+   <resultMap type="com.sist.study.model.ItemData" id="itemDataResultMap">
+      <id column ="ITEM_SEQ" property="itemSeq" />
+      <result column ="FILE_NAME" property="fileName" /> 
+      <result column ="ITEM_CODE" property="itemCode" /> 
+      <result column ="ITEM_NAME" property="itemName" /> 
+      <result column ="ITEM_CATE" property="itemCate" /> 
+      <result column ="ITEM_PRICE" property="itemPrice" /> 
+      <result column ="ITEM_INTRO" property="itemIntro" />
+      <result column ="READ_CNT" property="readCnt" /> 
+      <result column ="STOCK" property="stock" />
+      <result column ="REG_DATE" property="regDate" />
+      <result column ="ITEM_NUM" property="itemNum" />
+      <result column ="ADD_DATE" property="addDate" />
+      <result column ="USER_ID" property="userId" />
+   </resultMap>
+   
+   <resultMap type="com.sist.study.model.ItemFile" id="itemFileResultMap">
+      <id column ="ITEM_SEQ" property="itemSeq" />
+      <result column ="FILE_NUM" property="fileNum" /> 
+      <result column ="FILE_ORG_NAME" property="fileOrgName" /> 
+      <result column ="FILE_NAME" property="fileName" /> 
+      <result column ="FILE_EXT" property="fileExt" /> 
+      <result column ="FILE_SIZE" property="fileSize" /> 
+      <result column ="REG_DATE" property="regDate" />
+   </resultMap>
+   
+   <insert id="itemDataInsert" parameterType="com.sist.study.model.ItemData">
+      <selectKey resultType="int" keyProperty="itemSeq" order="BEFORE">
+         SELECT SEQ_ITEM_SEQ.NEXTVAL FROM DUAL
+      </selectKey>
+      INSERT INTO ST_ITEM_DATA (
+          ITEM_SEQ,
+          ITEM_CODE,
+          ITEM_NAME,
+          ITEM_CATE,
+          ITEM_PRICE,
+          ITEM_INTRO,
+          READ_CNT,
+          STOCK,
+          REG_DATE
+      ) VALUES (
+          #{itemSeq},
+          #{itemCode},
+          #{itemName},
+          #{itemCate},
+          #{itemPrice},
+          #{itemIntro},
+          #{readCnt},
+          #{stock},
+          SYSDATE
+      ) 
+   </insert>
+   
+   
+   <!-- 상품 List 조회 select -->
+   <select id="itemDataList" parameterType="com.sist.study.model.ItemData" resultMap="itemDataResultMap">
+      SELECT ITEM_SEQ,
+             ITEM_CODE,
+             ITEM_NAME,
+             FILE_NAME,
+             ITEM_CATE,
+             ITEM_PRICE,
+             READ_CNT,
+             STOCK,
+             REG_DATE
+        FROM (SELECT ROWNUM RNUM,
+                     ITEM_SEQ,
+                     FILE_NAME,
+                     ITEM_CODE,
+                     ITEM_NAME,
+                     ITEM_CATE,
+                     ITEM_PRICE,
+                     READ_CNT,
+                     STOCK,
+                     REG_DATE
+                FROM (SELECT A.ITEM_SEQ,
+                             NVL(B.FILE_NAME, '') AS FILE_NAME,
+                             NVL(A.ITEM_CODE, '') AS ITEM_CODE,
+                             NVL(A.ITEM_NAME, '') AS ITEM_NAME,
+                             NVL(A.ITEM_CATE, '') AS ITEM_CATE,
+                             NVL(A.ITEM_PRICE, 0) AS ITEM_PRICE,
+                             NVL(A.READ_CNT, 0) AS READ_CNT,
+                             NVL(A.STOCK, 0) AS STOCK,
+                             NVL(TO_CHAR(A.REG_DATE, 'YYYY/MM/DD HH24:MI:SS'), '') AS REG_DATE
+                        FROM ST_ITEM_DATA A, ST_ITEM_FILE B
+                       WHERE A.ITEM_SEQ = B.ITEM_SEQ (+)
+                         AND FILE_NUM = 1
+      <if test='itemCate != null and itemCate != ""'>
+                         AND A.ITEM_CATE = #{itemCate}
+      </if>
+      <if test='sortBy != null and sortBy != ""'>
+         <choose>
+            <when test='sortBy == "popularity"'>
+                       ORDER BY A.READ_CNT DESC
+            </when>
+            <when test='sortBy == "newness"'>
+                       ORDER BY A.REG_DATE DESC
+            </when>
+            <when test='sortBy == "priceAsc"'>
+                       ORDER BY A.ITEM_PRICE ASC
+            </when>
+            <when test='sortBy == "priceDesc"'>
+                       ORDER BY A.ITEM_PRICE DESC 
+            </when>
+         </choose>
+      </if>
+              ))
+       WHERE RNUM <![CDATA[>=]]> #{startRow}
+         AND RNUM <![CDATA[<=]]> #{endRow}
+   </select>
+   
+   
+   <!-- 총 상품 갯수 조회 -->
+   <select id="itemListCnt" parameterType="com.sist.study.model.ItemData" resultType="int">
+      SELECT COUNT(ITEM_SEQ)
+        FROM ST_ITEM_DATA
+       WHERE 1=1
+      <if test='itemCate != null and itemCate != ""'>
+         AND ITEM_CATE = #{itemCate}
+      </if>
+   </select>
+   
+   <!--상품 조회수 증가 -->
+   <update id="itemReadCntPlus" parameterType="int">
+      UPDATE ST_ITEM_DATA
+         SET READ_CNT = READ_CNT + 1
+       WHERE ITEM_SEQ = #{value}   
+   </update>
+
+   <!-- 상품 단건 조회 select -->
+   <select id="itemDetailSelect" parameterType="long" resultMap="itemDataResultMap">
+      SELECT A.ITEM_SEQ AS ITEM_SEQ,
+             NVL(B.FILE_NAME, '') AS FILE_NAME,
+             NVL(A.ITEM_CODE, '') AS ITEM_CODE,
+             NVL(A.ITEM_NAME, '') AS ITEM_NAME,
+             NVL(A.ITEM_CATE, '') AS ITEM_CATE,
+             NVL(A.ITEM_PRICE, 0) AS ITEM_PRICE,
+             NVL(A.ITEM_INTRO, '') AS ITEM_INTRO,
+             NVL(A.READ_CNT, 0) AS READ_CNT,
+             NVL(A.STOCK, 0) AS STOCK,
+             NVL(TO_CHAR(A.REG_DATE, 'YYYY/MM/DD HH24:MI:SS'), '') AS REG_DATE
+        FROM ST_ITEM_DATA A, ST_ITEM_FILE B
+       WHERE A.ITEM_SEQ = B.ITEM_SEQ (+)
+         AND A.ITEM_SEQ = #{value} 
+         AND B.FILE_NUM = 1
+   </select>
+   
+   <!-- 상품 파일 조회 -> 다중파일시 사용 예정 -->
+   <select id="itemFileSelect" parameterType="int" resultMap="itemFileResultMap">
+   
+   </select>
+
+   <!-- 추천 상품 조회 -->
+   <select id="itemRecItem" resultMap="itemDataResultMap">
+      SELECT ITEM_SEQ,
+             ITEM_CODE,
+             ITEM_NAME,
+             FILE_NAME,
+             ITEM_CATE,
+             ITEM_PRICE,
+             READ_CNT
+        FROM (SELECT ROWNUM RNUM,
+                     ITEM_SEQ,
+                     FILE_NAME,
+                     ITEM_CODE,
+                     ITEM_NAME,
+                     ITEM_CATE,
+                     ITEM_PRICE,
+                     READ_CNT
+                FROM (SELECT A.ITEM_SEQ,
+                             NVL(B.FILE_NAME, '') AS FILE_NAME,
+                             NVL(A.ITEM_CODE, '') AS ITEM_CODE,
+                             NVL(A.ITEM_NAME, '') AS ITEM_NAME,
+                             NVL(A.ITEM_CATE, '') AS ITEM_CATE,
+                             NVL(A.ITEM_PRICE, 0) AS ITEM_PRICE,
+                             NVL(A.READ_CNT, 0) AS READ_CNT
+                        FROM ST_ITEM_DATA A, ST_ITEM_FILE B
+                       WHERE A.ITEM_SEQ = B.ITEM_SEQ (+)
+                         AND FILE_NUM = 1
+                       ORDER BY DBMS_RANDOM.VALUE
+              )
+             WHERE ROWNUM <![CDATA[<=]]> 4
+      ) 
+   </select>
+
+   <!-- 장바구니 추가 (1개) -->
+   <insert id="itemAddCart" parameterType="com.sist.study.model.ItemData">
+      INSERT INTO ST_BASKET (
+                  USER_ID,
+                  ITEM_SEQ,
+                  ITEM_NAME,
+                  ITEM_NUM,
+                  ITEM_PRICE,
+                  ADD_DATE
+      ) VALUES (
+                  #{userId},
+                  #{itemSeq},
+                  #{itemName},
+                  #{itemNum},
+                  #{itemPrice},
+                  SYSDATE
+      ) 
+   </insert>
+   
+   
+   <!-- 장바구니 목록 -->
+   <select id="myCartList" parameterType="String" resultMap="itemDataResultMap">
+      SELECT NVL(A.USER_ID, '') AS USER_ID,
+             NVL(A.ITEM_SEQ, 0) AS ITEM_SEQ,
+             NVL(B.FILE_NAME, '') AS FILE_NAME,
+             NVL(A.ITEM_NAME, '') AS ITEM_NAME,
+             NVL(C.ITEM_CODE, '') AS ITEM_CODE,
+             NVL(A.ITEM_NUM, 0) AS ITEM_NUM,
+             NVL(A.ITEM_PRICE, 0) AS ITEM_PRICE,
+             NVL(TO_CHAR(A.ADD_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') AS ADD_DATE
+        FROM ST_BASKET A, ST_ITEM_FILE B, ST_ITEM_DATA C
+       WHERE 1=1
+         AND A.ITEM_SEQ = B.ITEM_SEQ
+         AND A.ITEM_SEQ = C.ITEM_SEQ
+         AND B.FILE_NUM = 1 
+         AND A.USER_ID = #{value}
+       ORDER BY ADD_DATE DESC
+   </select>
+   
+   <!-- 장바구니 단건 담은 갯수 -->
+   <select id="myCartItemNum"  parameterType="com.sist.study.model.ItemData" resultType="int">
+      SELECT NVL(ITEM_NUM, 0) AS ITEM_NUM
+        FROM ST_BASKET 
+       WHERE 1=1
+         AND USER_ID = #{userId}
+         AND ITEM_SEQ = #{itemSeq}
+   </select>
+   
+   <!-- 장바구니 갯수 변경 -->
+   <update id="itemNumUpdate" parameterType="com.sist.study.model.ItemData">
+      UPDATE ST_BASKET
+         SET ITEM_NUM = #{itemNum}
+       WHERE 1=1
+         AND USER_ID = #{userId}
+         AND ITEM_SEQ = #{itemSeq}
+   </update>
+   
+   <!-- 장바구니 항목 삭제 -->
+   <delete id="myItemDelete" parameterType="com.sist.study.model.ItemData">
+      DELETE FROM ST_BASKET
+       WHERE 1=1
+         AND USER_ID = #{userId}
+         AND ITEM_SEQ = #{itemSeq}
+   </delete>
+   
+   <!-- 장바구니 상품 갯수 -->
+   <select id="myCartTotalCnt" parameterType="String" resultType="int">
+      SELECT COUNT(USER_ID)
+        FROM ST_BASKET
+       WHERE 1=1
+         AND USER_ID = #{value} 
+   </select>
+   
+   <!-- 장바구니 존재여부 확인 cnt -->
+   <select id="chkCartCnt" parameterType="com.sist.study.model.ItemData" resultType="int">
+      SELECT COUNT(ITEM_SEQ)
+        FROM ST_BASKET
+       WHERE 1=1
+         AND USER_ID = #{userId}
+         AND ITEM_SEQ = #{itemSeq}
+   </select>
+
+   <!-- 상품 다건 조회 select -->
+   <select id="itemMultiSelect" parameterType="java.util.List" resultMap="itemDataResultMap">
+      SELECT A.ITEM_SEQ AS ITEM_SEQ,
+             NVL(B.FILE_NAME, '') AS FILE_NAME,
+             NVL(A.ITEM_CODE, '') AS ITEM_CODE,
+             NVL(A.ITEM_NAME, '') AS ITEM_NAME,
+             NVL(A.ITEM_CATE, '') AS ITEM_CATE,
+             NVL(A.ITEM_PRICE, 0) AS ITEM_PRICE,
+             NVL(A.ITEM_INTRO, '') AS ITEM_INTRO,
+             NVL(A.READ_CNT, 0) AS READ_CNT,
+             NVL(A.STOCK, 0) AS STOCK,
+             NVL(TO_CHAR(A.REG_DATE, 'YYYY/MM/DD HH24:MI:SS'), '') AS REG_DATE
+        FROM ST_ITEM_DATA A, ST_ITEM_FILE B
+       WHERE A.ITEM_SEQ = B.ITEM_SEQ (+)
+         AND A.ITEM_SEQ IN 
+    <foreach item="item" collection="list" open="(" separator="," close=")">
+        #{item}
+    </foreach>
+         AND B.FILE_NUM = 1
+   </select>
+
+   
+   
+   	<!-- 장바구니 전체 삭제 -->
+	<delete id="myItemAllDelete" parameterType="String">
+		DELETE FROM ST_BASKET
+		 WHERE 1=1
+		   AND USER_ID = #{value}
+	</delete>
+
+</mapper>

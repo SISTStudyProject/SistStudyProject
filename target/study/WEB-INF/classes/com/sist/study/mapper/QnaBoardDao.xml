@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.study.dao.QnaBoardDao">
+
+	<resultMap id="qnaBoardResultMap" type="com.sist.study.model.QnaBoard">
+		<id column="QNABOARD_SEQ" property="qnaBoardSeq" />
+		<result column="USER_ID" property="userId" />
+		<result column="QNABOARD_TITLE" property="qnaBoardTitle" />
+		<result column="QNABOARD_CONTENT" property="qnaBoardContent" />
+		<result column="STATUS" property="status" />
+		<result column="REG_DATE" property="regDate" />
+		<result column="SECRET_FLAG" property="secretFlag" />
+		<result column="REPLY_FLAG" property="replyFlag" />
+	</resultMap>
+	
+	<resultMap id="qnaFileResultMap" type="com.sist.study.model.QnaFile" >
+		<id column="QNABOARD_SEQ" property="qnaBoardSeq" />
+		<id column="QNABOARD_FILE_SEQ" property="qnaBoardFileSeq" />
+		<result column="FILE_ORG_NAME" property="fileOrgName" />
+		<result column="FILE_NAME" property="fileName" />
+		<result column="FILE_EXT" property="fileExt" />
+		<result column="FILE_SIZE" property="fileSize" />
+		<result column="REG_DATE" property="regDate" />
+	</resultMap>
+	
+	<resultMap id="qnaReplyResultMap" type="com.sist.study.model.QnaReply" >
+		<id column="QNAREPLY_SEQ" property="qnareplySeq" />
+		<id column="QNABOARD_SEQ" property="qnaboardSeq" />
+		<result column="MANAGER_ID" property="managerId" />
+		<result column="REPLY_CONTENT" property="replyContent" />
+		<result column="REG_DATE" property="regDate" />
+	</resultMap>
+	
+	<!-- 문의 게시판 리스트 -->
+	<select id="boardList" parameterType="com.sist.study.model.QnaBoard" resultMap="qnaBoardResultMap" >
+		SELECT *
+		  FROM (
+		            SELECT ROWNUM RNUM, QNABOARD_SEQ, USER_ID, QNABOARD_TITLE, QNABOARD_CONTENT, STATUS, REG_DATE, SECRET_FLAG, REPLY_FLAG
+		              FROM (
+		                        SELECT
+		                            QNABOARD_SEQ,
+		                            NVL(USER_ID,'') USER_ID,
+		                            NVL(QNABOARD_TITLE,'') QNABOARD_TITLE,
+		                            NVL(QNABOARD_CONTENT,'') QNABOARD_CONTENT,
+		                            NVL(STATUS,'') STATUS,
+		                            NVL(TO_CHAR(REG_DATE,'YYYY"년"MM"월"DD"일"'),'') REG_DATE,
+		                            NVL(SECRET_FLAG,'') SECRET_FLAG,
+		                            NVL(REPLY_FLAG,'') REPLY_FLAG
+		                        FROM  QNABOARD
+		                        WHERE 1 = 1
+		                       <if test=' searchValue != null and searchValue != ""' >
+		                           AND( QNABOARD_TITLE LIKE '%' || #{searchValue} || '%'
+		                           OR DBMS_LOB.INSTR(QNABOARD_CONTENT, #{searchValue}) > 0)
+		                       </if>
+		                        ORDER BY QNABOARD_SEQ DESC
+		                        )
+		            )
+		WHERE RNUM <![CDATA[>=]]> #{startRow}
+		  AND RNUM <![CDATA[<=]]> #{endRow}
+	</select>
+	
+	<!-- 문의 게시글 조회 -->
+	<select id="boardSelect" parameterType="long" resultMap="qnaBoardResultMap" >
+		SELECT
+		    QNABOARD_SEQ,
+		    NVL(USER_ID,'') USER_ID,
+		    NVL(QNABOARD_TITLE,'') QNABOARD_TITLE,
+		    NVL(QNABOARD_CONTENT,'') QNABOARD_CONTENT,
+		    NVL(STATUS,'') STATUS,
+		    NVL(TO_CHAR(REG_DATE,'YYYY"년"MM"월"DD"일" HH24:MI:SS'),'') REG_DATE,
+		    NVL(SECRET_FLAG,'') SECRET_FLAG,
+		    NVL(REPLY_FLAG,'') REPLY_FLAG
+		FROM  QNABOARD
+		WHERE QNABOARD_SEQ = #{value}
+	</select>
+	
+	<!-- 문의 첨부파일 조회 -->
+	<select id="boardFileSelect" parameterType="long" resultMap="qnaFileResultMap" >
+	 SELECT
+	    QNABOARD_SEQ,
+	    QNABOARD_FILE_SEQ,
+	    FILE_ORG_NAME,
+	    FILE_NAME,
+	    FILE_EXT,
+	    FILE_SIZE,
+	    REG_DATE
+	FROM QNA_FILE
+	WHERE QNABOARD_SEQ = #{value}
+	</select>
+	
+	<!-- 문의 게시글 갯수 조회 -->
+	<select id="totalQna" parameterType="com.sist.study.model.QnaBoard" resultType="long" >
+		SELECT COUNT(QNABOARD_SEQ) AS CNT 
+		  FROM QNABOARD
+		 WHERE 1=1
+		 <if test='searchValue != null and searchValue != ""' >
+		      AND(QNABOARD_TITLE LIKE '%' || #{searchValue} || '%'
+		      OR DBMS_LOB.INSTR(QNABOARD_CONTENT, #{searchValue}) > 0)
+		 </if>		   
+	</select>	
+	
+	<!-- 문의 글 작성 -->
+	<insert id="boardInsert" parameterType="com.sist.study.model.QnaBoard" >
+		<selectKey resultType="long" keyProperty="qnaBoardSeq" order="BEFORE" >
+			SELECT SEQ_QNABOARD_SEQ.NEXTVAL
+			  FROM DUAL
+		</selectKey>
+			INSERT INTO QNABOARD (
+			    QNABOARD_SEQ,
+			    USER_ID,
+			    QNABOARD_TITLE,
+			    QNABOARD_CONTENT,
+			    STATUS,
+			    REG_DATE,
+			    SECRET_FLAG
+			) VALUES (#{qnaBoardSeq}, #{userId}, #{qnaBoardTitle}, #{qnaBoardContent}, 'Y', SYSDATE, #{secretFlag})
+	</insert>
+
+	<!-- 문의 글 첨부파일 입력 -->
+	<insert id="boardFileInsert" parameterType="com.sist.study.model.QnaFile" >
+		INSERT INTO QNA_FILE (
+		    QNABOARD_SEQ,
+		    QNABOARD_FILE_SEQ,
+		    FILE_ORG_NAME,
+		    FILE_NAME,
+		    FILE_EXT,
+		    FILE_SIZE,
+		    REG_DATE
+		) VALUES (#{qnaBoardSeq},(select NVL(max(qnaboard_file_seq), 0)+1 from qna_file where qnaboard_seq = #{qnaBoardSeq}), 
+					#{fileOrgName}, #{fileName}, #{fileExt}, #{fileSize}, SYSDATE)
+	</insert>
+	
+	<!-- 문의 글 삭제, 첨부파일 삭제 -->
+	<delete id="boardDelete" parameterType="long" >
+		DELETE FROM QNABOARD WHERE QNABOARD_SEQ = #{value}
+	</delete>
+	
+	<delete id="boardFileDelete" parameterType="long" >
+		DELETE FROM QNA_FILE WHERE QNABOARD_SEQ = #{value}
+	</delete>
+	
+	<!-- 문의 글 답변 조회 -->
+	<select id="replySelect" resultMap="qnaReplyResultMap" parameterType="long">		
+		SELECT
+		    NVL(MANAGER_ID,'') MANAGER_ID,
+		    QNAREPLY_SEQ,
+		    QNABOARD_SEQ,
+		    NVL(REPLY_CONTENT,'') REPLY_CONTENT,
+		    NVL(TO_CHAR(REG_DATE,'YYYY"년"MM"월"DD"일" HH24:MI'),'') REG_DATE
+		FROM QNA_REPLY
+		WHERE QNABOARD_SEQ = #{value}
+	</select>
+	
+	<!-- 문의 글 답변 작성 -->
+	<insert id="replyInsert" parameterType="com.sist.study.model.QnaReply" >
+		INSERT INTO QNA_REPLY (
+		    MANAGER_ID,
+		    QNAREPLY_SEQ,
+		    QNABOARD_SEQ,
+		    REPLY_CONTENT,
+		    REG_DATE
+		) VALUES (#{managerId},SEQ_QNAREPLY_SEQ.NEXTVAL, #{qnaboardSeq}, #{replyContent}, SYSDATE)
+	</insert>
+	
+	<!-- 문의 글 답변 수정 -->
+	<update id="replyUpdate" parameterType="com.sist.study.model.QnaReply" >
+		UPDATE QNA_REPLY
+		SET
+		   REPLY_CONTENT = #{replyContent}
+		WHERE
+		   QNABOARD_SEQ = #{qnaboardSeq}
+	</update>
+	
+	<!-- 문의 글 답변 삭제 -->
+	<delete id="replyDelete" parameterType="long" >
+		DELETE FROM QNA_REPLY WHERE QNABOARD_SEQ = #{value}
+	</delete>
+	
+	<!-- 답변 여부 업데이트 -->
+	<update id="flagUpdate" parameterType="long" >
+		UPDATE QNABOARD SET REPLY_FLAG = 'Y'
+		WHERE QNABOARD_SEQ = #{value}
+	</update>
+	
+	<update id="flagUpdateX" parameterType="long" >
+		UPDATE QNABOARD SET REPLY_FLAG = 'N'
+		WHERE QNABOARD_SEQ = #{value}
+	</update>
+</mapper>
+
+
+
+
+
+
+

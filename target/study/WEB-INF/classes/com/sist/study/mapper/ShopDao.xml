@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.sist.study.dao.ShopDao">
+
+   <resultMap type="com.sist.study.model.ItemData" id="itemDataResultMap">
+      <id column ="ITEM_SEQ" property="itemSeq" />
+      <result column ="FILE_NAME" property="fileName" /> 
+      <result column ="ITEM_CODE" property="itemCode" /> 
+      <result column ="ITEM_NAME" property="itemName" /> 
+      <result column ="ITEM_CATE" property="itemCate" /> 
+      <result column ="ITEM_PRICE" property="itemPrice" /> 
+      <result column ="ITEM_INTRO" property="itemIntro" />
+      <result column ="READ_CNT" property="readCnt" /> 
+      <result column ="STOCK" property="stock" />
+      <result column ="REG_DATE" property="regDate" /> 
+   </resultMap>
+   
+   <resultMap type="com.sist.study.model.ItemFile" id="itemFileResultMap">
+      <id column ="ITEM_SEQ" property="itemSeq" />
+      <result column ="FILE_NUM" property="fileNum" /> 
+      <result column ="FILE_ORG_NAME" property="fileOrgName" /> 
+      <result column ="FILE_NAME" property="fileName" /> 
+      <result column ="FILE_EXT" property="fileExt" /> 
+      <result column ="FILE_SIZE" property="fileSize" /> 
+      <result column ="REG_DATE" property="regDate" />
+   </resultMap>
+   
+   <insert id="itemDataInsert" parameterType="com.sist.study.model.ItemData">
+      <selectKey resultType="int" keyProperty="itemSeq" order="BEFORE">
+         SELECT SEQ_ITEM_SEQ.NEXTVAL FROM DUAL
+      </selectKey>
+      INSERT INTO ITEM_DATA (
+          ITEM_SEQ,
+          ITEM_CODE,
+          ITEM_NAME,
+          ITEM_CATE,
+          ITEM_PRICE,
+          ITEM_INTRO,
+          READ_CNT,
+          STOCK,
+          REG_DATE
+      ) VALUES (
+          #{itemSeq},
+          #{itemCode},
+          #{itemName},
+          #{itemCate},
+          #{itemPrice},
+          #{itemIntro},
+          #{readCnt},
+          #{stock},
+          SYSDATE
+      ) 
+   </insert>
+   
+   
+   <!-- 상품 List 조회 select -->
+   <select id="itemDataList" parameterType="com.sist.study.model.ItemData" resultMap="itemDataResultMap">
+      SELECT ITEM_SEQ,
+             ITEM_CODE,
+             ITEM_NAME,
+             FILE_NAME,
+             ITEM_CATE,
+             ITEM_PRICE,
+             READ_CNT,
+             STOCK,
+             REG_DATE
+        FROM (SELECT ROWNUM RNUM,
+                     ITEM_SEQ,
+                     FILE_NAME,
+                     ITEM_CODE,
+                     ITEM_NAME,
+                     ITEM_CATE,
+                     ITEM_PRICE,
+                     READ_CNT,
+                     STOCK,
+                     REG_DATE
+                FROM (SELECT A.ITEM_SEQ,
+                             NVL(B.FILE_NAME, '') AS FILE_NAME,
+                             NVL(A.ITEM_CODE, '') AS ITEM_CODE,
+                             NVL(A.ITEM_NAME, '') AS ITEM_NAME,
+                             NVL(A.ITEM_CATE, '') AS ITEM_CATE,
+                             NVL(A.ITEM_PRICE, 0) AS ITEM_PRICE,
+                             NVL(A.READ_CNT, 0) AS READ_CNT,
+                             NVL(A.STOCK, 0) AS STOCK,
+                             NVL(TO_CHAR(A.REG_DATE, 'YYYY/MM/DD HH24:MI:SS'), '') AS REG_DATE
+                        FROM ITEM_DATA A, ITEM_FILE B
+                       WHERE A.ITEM_SEQ = B.ITEM_SEQ (+)
+                         AND FILE_NUM = 1
+      <if test='itemCate != null and itemCate != ""'>
+                         AND A.ITEM_CATE = #{itemCate}
+      </if>
+      <if test='sortBy != null and sortBy != ""'>
+         <choose>
+            <when test='sortBy == "popularity"'>
+                       ORDER BY A.READ_CNT DESC
+            </when>
+            <when test='sortBy == "newness"'>
+                       ORDER BY A.REG_DATE DESC
+            </when>
+            <when test='sortBy == "priceAsc"'>
+                       ORDER BY A.ITEM_PRICE ASC
+            </when>
+            <when test='sortBy == "priceDesc"'>
+                       ORDER BY A.ITEM_PRICE DESC 
+            </when>
+         </choose>
+      </if>
+              ))
+       WHERE RNUM <![CDATA[>=]]> #{startRow}
+         AND RNUM <![CDATA[<=]]> #{endRow}
+   </select>
+   
+   
+   <!-- 총 상품 갯수 조회 -->
+   <select id="itemListCnt" parameterType="com.sist.study.model.ItemData" resultType="int">
+      SELECT COUNT(ITEM_SEQ)
+        FROM ITEM_DATA
+       WHERE 1=1
+      <if test='itemCate != null and itemCate != ""'>
+         AND ITEM_CATE = #{itemCate}
+      </if>
+   </select>
+   
+   <!--상품 조회수 증가 -->
+   <update id="itemReadCntPlus" parameterType="int">
+      UPDATE ITEM_DATA
+         SET READ_CNT = READ_CNT + 1
+       WHERE ITEM_SEQ = #{value}   
+   </update>
+
+
+   <!-- 상품 단건 조회 select -->
+   <select id="itemDetailSelect" parameterType="int" resultMap="itemDataResultMap">
+      SELECT A.ITEM_SEQ AS ITEM_SEQ,
+             NVL(B.FILE_NAME, '') AS FILE_NAME,
+             NVL(A.ITEM_CODE, '') AS ITEM_CODE,
+             NVL(A.ITEM_NAME, '') AS ITEM_NAME,
+             NVL(A.ITEM_CATE, '') AS ITEM_CATE,
+             NVL(A.ITEM_PRICE, 0) AS ITEM_PRICE,
+             NVL(A.ITEM_INTRO, '') AS ITEM_INTRO,
+             NVL(A.READ_CNT, 0) AS READ_CNT,
+             NVL(A.STOCK, 0) AS STOCK,
+             NVL(TO_CHAR(A.REG_DATE, 'YYYY/MM/DD HH24:MI:SS'), '') AS REG_DATE
+        FROM ITEM_DATA A, ITEM_FILE B
+       WHERE A.ITEM_SEQ = B.ITEM_SEQ (+)
+         AND A.ITEM_SEQ = #{value} 
+         AND B.FILE_NUM = 1
+   </select>
+   
+   <!-- 상품 파일 조회 -> 다중파일시 사용 예정 -->
+   <select id="itemFileSelect" parameterType="int" resultMap="itemFileResultMap">
+   
+   </select>
+
+   <!-- 추천 상품 조회 -->
+   <select id="itemRecItem" resultMap="itemDataResultMap">
+      SELECT ITEM_SEQ,
+             ITEM_CODE,
+             ITEM_NAME,
+             FILE_NAME,
+             ITEM_CATE,
+             ITEM_PRICE,
+             READ_CNT
+        FROM (SELECT ROWNUM RNUM,
+                     ITEM_SEQ,
+                     FILE_NAME,
+                     ITEM_CODE,
+                     ITEM_NAME,
+                     ITEM_CATE,
+                     ITEM_PRICE,
+                     READ_CNT
+                FROM (SELECT A.ITEM_SEQ,
+                             NVL(B.FILE_NAME, '') AS FILE_NAME,
+                             NVL(A.ITEM_CODE, '') AS ITEM_CODE,
+                             NVL(A.ITEM_NAME, '') AS ITEM_NAME,
+                             NVL(A.ITEM_CATE, '') AS ITEM_CATE,
+                             NVL(A.ITEM_PRICE, 0) AS ITEM_PRICE,
+                             NVL(A.READ_CNT, 0) AS READ_CNT
+                        FROM ITEM_DATA A, ITEM_FILE B
+                       WHERE A.ITEM_SEQ = B.ITEM_SEQ (+)
+                         AND FILE_NUM = 1
+                       ORDER BY DBMS_RANDOM.VALUE
+              )
+             WHERE ROWNUM <![CDATA[<=]]> 4
+      ) 
+   </select>
+
+
+
+
+
+
+
+</mapper>
